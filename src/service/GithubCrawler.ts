@@ -1,16 +1,17 @@
-// import { Builder, By, Key, until, WebDriver } from "selenium-webdriver";
-// import chrome from "selenium-webdriver/chrome";
 import { Builder, By, Key, until, WebDriver } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome";
 
 import { GITHUB_ALL_BRANCH_URL } from "../resources/config";
 
-// const waitAndClick = async (driver: WebDriver, elementBy: By) => {
-//     const ele = await driver.wait(until.elementLocated(elementBy));
-//     await ele.click();
-// };
+
+const waitAndClick = async (driver: WebDriver, elementBy: By) => {
+    const element = await driver.wait(until.elementLocated(elementBy));
+    await element.click();
+};
 
 const getGithubCommits = async (allGroup: [{ [k: string]: any; }]) => {
+
+    let response = {};
 
     const driver = await new Builder()
         .forBrowser("chrome")
@@ -29,59 +30,34 @@ const getGithubCommits = async (allGroup: [{ [k: string]: any; }]) => {
                     .replace("<<username>>", pair.username)
                     .replace("<<repository>>", pair.repository);
 
-                await driver.get(branchesUrl);
+                let page = 1;
+                let branchUrlList: string[] = [];
+                while (true) {
+                    let currentbranchesUrl = branchesUrl.replace("<<page>>", page.toString());
+                    await driver.get(currentbranchesUrl);
+                    const branches = await driver.findElements(By.className("branch-name"));
+                    if (branches.length == 0) break;
+                    for (let branch of branches) {
+                        let branchUrl: string = await branch.getAttribute("href");
+                        branchUrlList.push(branchUrl);
+                    }
+                    page++;
+                };
 
-                const branches = await driver.findElements(By.className("branch-name"));
-                for (let branch of branches) {
-                    console.log(await branch.getAttribute("href"));
-                    await driver.get(await branch.getAttribute("href"));
-                    driver.findElement(By.className("pl-3 pr-3 py-3 p-md-0 mt-n3 mb-n3 mr-n3 m-md-0 Link--primary no-underline no-wrap")).click();
+                for (let branchUrl of branchUrlList) {
+                    await driver.get(branchUrl);
+                    let branchName: string = await driver.findElement(By.css("span[class'css-truncate-target']")).getText();
+                    await waitAndClick(driver, By.css("a[class='pl-3 pr-3 py-3 p-md-0 mt-n3 mb-n3 mr-n3 m-md-0 Link--primary no-underline no-wrap']"));
+                    await driver.sleep(3000);
                 }
             };
         };
 
-
-
-        // allGroup.forEach((groupData: { [k: string]: any; }) => {
-        //     const groupName = groupData["groupName"];
-        //     groupData["repositoryList"].forEach((pair: any) => {
-        //         const url = github_all_branch_url
-        //             .replace("<<username>>", pair.username)
-        //             .replace("<<repository>>", pair.repository);
-
-        //         await driver.get(url);
-        //         const branches = await driver.findElements(By.className("branch-name"));
-        //         branches.forEach(url => console.log(url));
-
-
-        //         // await driver.get("https://ais.ntou.edu.tw/Default.aspx");
-        //         // await driver.findElement(By.id("M_PORTAL_LOGIN_ACNT")).sendKeys(account);
-        //         // await driver.findElement(By.id("M_PW")).sendKeys(password, Key.ENTER);
-        //         // await driver.wait(until.urlIs("https://ais.ntou.edu.tw/MainFrame.aspx"));
-        //         // await driver
-        //         //     .switchTo()
-        //         //     .frame(await driver.findElement(By.name("menuFrame")));
-        //         // await waitAndClick(driver, By.css("a[title='教務系統']"));
-        //         // await waitAndClick(driver, By.css("a[title='選課系統']"));
-        //         // await waitAndClick(driver, By.css("a[title='學生個人選課清單課表列印']"));
-
-        //         // await driver.switchTo().defaultContent();
-        //         // await driver
-        //         //     .switchTo()
-        //         //     .frame(await driver.findElement(By.name("mainFrame")));
-
-        //         // await waitAndClick(driver, By.id("QUERY_BTN3"));
-
-        //         // const classTable = await driver.wait(until.elementLocated(By.id("table2")));
-        //         // tableHTML = await classTable.getAttribute("innerHTML");
-        //     });
-        // });
     } catch (error) {
         console.error(error);
     } finally {
         await driver.quit();
     }
-    // return tableHTML;
 };
 
 export { getGithubCommits };

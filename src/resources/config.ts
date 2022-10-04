@@ -1,1 +1,1 @@
-export const GITHUB_ALL_BRANCH_URL = "https://github.com/<<username>>/<<repository>>/branches/all";
+export const GITHUB_ALL_BRANCH_URL = "https://github.com/<<username>>/<<repository>>/branches/all?page=<<page>>";
