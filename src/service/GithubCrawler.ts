@@ -3,7 +3,7 @@
 import { Builder, By, Key, until, WebDriver } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome";
 
-import { github_all_branch_url } from "../resources/config";
+import { GITHUB_ALL_BRANCH_URL } from "../resources/config";
 
 // const waitAndClick = async (driver: WebDriver, elementBy: By) => {
 //     const ele = await driver.wait(until.elementLocated(elementBy));
@@ -14,7 +14,8 @@ const getGithubCommits = async (allGroup: [{ [k: string]: any; }]) => {
 
     const driver = await new Builder()
         .forBrowser("chrome")
-        .setChromeOptions(new chrome.Options().headless())
+        // .setChromeOptions(new chrome.Options().headless())
+        .setChromeOptions(new chrome.Options())
         .build();
 
     try {
@@ -24,7 +25,7 @@ const getGithubCommits = async (allGroup: [{ [k: string]: any; }]) => {
 
             for (let pair of repositoryList) {
 
-                const branchesUrl = github_all_branch_url
+                const branchesUrl = GITHUB_ALL_BRANCH_URL
                     .replace("<<username>>", pair.username)
                     .replace("<<repository>>", pair.repository);
 
@@ -34,7 +35,7 @@ const getGithubCommits = async (allGroup: [{ [k: string]: any; }]) => {
                 for (let branch of branches) {
                     console.log(await branch.getAttribute("href"));
                     await driver.get(await branch.getAttribute("href"));
-                    // driver.findElement(By.className("pl-3 pr-3 py-3 p-md-0 mt-n3 mb-n3 mr-n3 m-md-0 Link--primary no-underline no-wrap")).click();
+                    driver.findElement(By.className("pl-3 pr-3 py-3 p-md-0 mt-n3 mb-n3 mr-n3 m-md-0 Link--primary no-underline no-wrap")).click();
                 }
             };
         };
